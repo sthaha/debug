@@ -1,0 +1,62 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dns-gather-tool
+spec: {}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hosts
+  namespace: dns-gather-tool
+  labels:
+    app: dns-gather-tool
+data:
+  ### add your hosts here ###
+  hosts.txt: |
+    google.com
+    one.one.one.one
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dns-gather-tool
+  namespace: dns-gather-tool
+  labels:
+    app: dns-gather-tool
+spec:
+  selector:
+    matchLabels:
+      app: dns-gather-tool
+  template:
+    metadata:
+      labels:
+        app: dns-gather-tool
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+        - image: quay.io/sthaha/dns-gather-tool:latest
+          imagePullPolicy: Always
+          name: dns-gather-tool
+          resources: {}
+          securityContext:
+            privileged: true
+          terminationMessagePath: /dev/termination-log
+          command:
+            - dns-gather-tool.sh
+            - /data/hosts.txt
+          volumeMounts:
+            - name: strace-store
+              mountPath: /tmp/strace-hosts
+            - name: hosts-txt
+              mountPath: /data
+
+      volumes:
+        - name: strace-store
+          emptyDir: {}
+        - name: hosts-txt
+          configMap:
+            name: hosts
