@@ -94,7 +94,7 @@ main() {
   local hosts_file=${1:-hosts.txt}
 
   date -u +"%Y-%m-%dT%H:%M:%S%Z [%s] starting strace"
-  mkdir -p $STRACE_DIR $STRACE_DIR/out
+  mkdir -p $STRACE_DIR/out
 
   read_hosts "$hosts_file"
 
