@@ -56,7 +56,7 @@ pause_strace() {
     sleep infinity
   }
 
-  (( failures-- ))  ### acutal failure dir
+  (( failures-- ))  ### actual failure dir
 
   echo '-----------------------------------'
   cat $STRACE_DIR/out/$failures/*.dig.txt
