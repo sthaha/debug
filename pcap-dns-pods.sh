@@ -129,10 +129,7 @@ EOF
 }
 
 start_tcpdump_all_nodes() {
-
-  echo -e \n
-  log "Starting tcpdump on all debug pods ... "
-  echo "-----------------------------------------------------"
+  sub_header "Starting tcpdump on all debug pods ... "
 
   local idx=0
   for pod in ${DEBUG_PODS[@]}; do
