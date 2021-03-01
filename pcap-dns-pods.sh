@@ -4,8 +4,6 @@ set -u -e -o pipefail
 declare -r SCRIPT_PATH=$(readlink -f "$0")
 declare -r SCRIPT_DIR=$(cd $(dirname "$SCRIPT_PATH") && pwd)
 
-trap cleanup EXIT
-trap "exit 0" SIGINT
 
 declare -r DNS_PCAP_NS=dns-pcap
 declare  -r LOCAL_PCAP_DIR="dns-pcaps/$(date +%s)"
@@ -14,8 +12,19 @@ declare -a TCPDUMP_PIDS=()
 declare -a DEBUG_PODS=()
 declare -a NODE_NAMES=()
 
+
+print_with_timestamp() {
+  local level=$1; shift
+  echo $(date -u +"%Y-%m-%dT%H:%M:%S%Z [%s]") "$level: $@"
+
+}
+
 log() {
-  echo $(date -u +"%Y-%m-%dT%H:%M:%S%Z [%s]") ": $@"
+  print_with_timestamp INFO "$@"
+}
+
+err() {
+  print_with_timestamp ERROR "$@" >&2
 }
 
 sub_header() {
@@ -37,8 +46,8 @@ cleanup() {
   ### DO NOT EXIT on ERRORS
   #set +e
   stop_listening
-  sleep 10  ### requires time to flush
 
+  sleep 3  ### requires time to flush
   cp_pcaps
   delete_debug_pods
 
@@ -51,12 +60,13 @@ stop_listening() {
   sub_header  "Stopping tcpdump on all pods"
 
   for pod in ${DEBUG_PODS[@]}; do
-    oc exec -t -n $DNS_PCAP_NS $pod  -- pkill tcpdump
+    oc exec -t -n $DNS_PCAP_NS $pod  -- pkill tcpdump &
   done
+  wait
 
   for pid in ${TCPDUMP_PIDS[@]}; do
     log "sending kill to $pid"
-    kill -TERM $pid || true
+    {kill -TERM $pid || true} &
   done
   wait
 }
@@ -159,8 +169,15 @@ main() {
   echo All pcaps will be copied to $LOCAL_PCAP_DIR
   echo ==========================================================
 
-  oc get ns $DNS_PCAP_NS -o name >/dev/null || oc create ns $DNS_PCAP_NS
+  ### ensure the ns is created before proceeding
+  oc get ns $DNS_PCAP_NS -o name >/dev/null || oc create ns $DNS_PCAP_NS || {
+    err "Failed to create $DNS_PCAP_NS namespace"
+    return 1
+  }
 
+  ### cleanup only if the ns can be created
+  trap cleanup EXIT
+  trap "exit 0" SIGINT
   start_debug_pods
   start_tcpdump_all_nodes
 
