@@ -129,7 +129,7 @@ start_debug_node() {
   NODE_NAMES+=( $node_name )   ### maintain same index
 
   echo $pod_manifest | oc apply -f-
-  oc wait --for=condition=Ready -n $TCPDUMP_NS "pod/$pod_name"
+  oc wait --timeout=120s --for=condition=Ready -n $TCPDUMP_NS "pod/$pod_name"
   return 0
 }
 
