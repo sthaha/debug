@@ -310,6 +310,8 @@ Usage:
   $app [--no-nodes] POD-SELECTOR
   $app -h|--help
 
+Options:
+  --no-nodes: Do not capture the traffic from nodes
 
 Examples:
 
