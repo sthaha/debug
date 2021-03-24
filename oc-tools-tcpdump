@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 set -u -e -o pipefail
 
-declare -r SCRIPT_PATH=$(readlink -f "$0")
-declare -r SCRIPT_DIR=$(cd $(dirname "$SCRIPT_PATH") && pwd)
-
-
 declare -r TCPDUMP_NS=tcpdump-pcap-$(openssl rand -hex 4)
 declare  -r LOCAL_PCAP_DIR="pcaps/$(date -u +%Y%m%d-%H%M%S-utc)"
 declare  -r NODE_PCAP_FILE="/tmp/node.pcap"
 
+### ARRAY that maintains all the debug pods that is started
 declare -a PODS=()
 
 declare -a TCPDUMP_PIDS=()
