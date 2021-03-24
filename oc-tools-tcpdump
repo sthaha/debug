@@ -14,7 +14,7 @@ declare -a NODE_NAMES=()
 
 log() {
   local level=$1; shift
-  echo $(date -u +"%Y-%m-%dT%H:%M:%S%Z [%s]") "$level: $@"
+  echo $(date -u +"%Y-%m-%dT%H:%M:%S") " $level: $@"
 }
 
 info() {
