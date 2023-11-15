@@ -368,6 +368,8 @@ main() {
     return 1
   }
 
+  oc patch namespace $TCPDUMP_NS --type=merge -p '{"metadata": {"annotations": { "scheduler.alpha.kubernetes.io/defaultTolerations": "[{\"operator\": \"Exists\"}]"}}}'
+
   h2 All pcaps will be copied to $LOCAL_PCAP_DIR
   info Starting packet capture of all pods matching
 
